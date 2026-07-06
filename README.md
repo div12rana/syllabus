@@ -6,7 +6,7 @@ A static, multi-page site covering the 4-year B.A. Hons Psychology programme:
 - `syllabus.html` — Year-by-year, semester-by-semester syllabus
 - `readings.html` — Subject-wise suggested reading lists
 - `career.html` — "Career Compass": pick up to 5 subjects, get a suggested specialisation
-- `css/style.css` — Shared styling
+- CSS is now inlined directly in each page's <style> tag (no separate stylesheet — avoids any path issues on GitHub Pages)
 - `js/data.js` — All syllabus data, book lists, and career-mapping logic
 
 No build step, no dependencies — plain HTML/CSS/JS.
