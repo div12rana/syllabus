@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Career Compass — B.A. Hons Psychology</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav-row">
+    <div class="brand">
+      <span class="kicker">Invertis University · Dept. of Applied Sciences &amp; Humanities</span>
+      <span class="name">B.A. Hons Psychology</span>
+    </div>
+    <nav class="tabs">
+      <a class="tab" href="index.html">Overview</a>
+      <a class="tab" href="syllabus.html">Syllabus</a>
+      <a class="tab" href="readings.html">Readings</a>
+      <a class="tab active" href="career.html">Career Compass</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="tight">
+    <div class="wrap">
+      <span class="kicker-eyebrow">Career Compass</span>
+      <h2>Choose up to 5 papers you'd actually enjoy.</h2>
+      <p class="section-note">These are the core theory papers from all four years. Tap the ones that
+      genuinely interest you — not what sounds impressive — and we'll point to the specialisation
+      track and real career roles that best match your picks.</p>
+
+      <div class="picker-grid" id="pickerGrid"></div>
+
+      <div class="picker-bar">
+        <span class="count">Selected: <b id="selCount">0</b> / 5</span>
+        <div style="display:flex; gap:10px;">
+          <button class="btn ghost" id="clearBtn">Clear</button>
+          <button class="btn" id="revealBtn" disabled>Reveal my track →</button>
+        </div>
+      </div>
+
+      <div id="resultZone"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">This is a lightweight guide based on subject content, not a formal career-counselling
+    instrument. Use it as a conversation starter with your faculty advisor.</div>
+</footer>
+
+<script src="js/data.js"></script>
+<script>
+  const pickerGrid = document.getElementById('pickerGrid');
+  const selCount = document.getElementById('selCount');
+  const revealBtn = document.getElementById('revealBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const resultZone = document.getElementById('resultZone');
+  const MAX = 5;
+  let selected = new Set();
+
+  function buildGrid(){
+    pickerGrid.innerHTML = CAREER_SUBJECTS.map(s => `
+      <div class="chip" data-code="${s.code}" tabindex="0" role="checkbox" aria-checked="false">
+        <div class="c-code mono">${s.code}</div>
+        <div class="c-name">${s.name}</div>
+        <div class="c-year">Year ${s.year}</div>
+      </div>
+    `).join('');
+
+    pickerGrid.querySelectorAll('.chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>toggle(chip));
+      chip.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(chip);} });
+    });
+  }
+
+  function toggle(chip){
+    const code = chip.dataset.code;
+    if(selected.has(code)){
+      selected.delete(code);
+      chip.classList.remove('selected');
+      chip.setAttribute('aria-checked','false');
+    } else {
+      if(selected.size >= MAX) return;
+      selected.add(code);
+      chip.classList.add('selected');
+      chip.setAttribute('aria-checked','true');
+    }
+    selCount.textContent = selected.size;
+    revealBtn.disabled = selected.size === 0;
+    resultZone.innerHTML = '';
+  }
+
+  clearBtn.addEventListener('click', ()=>{
+    selected.clear();
+    pickerGrid.querySelectorAll('.chip').forEach(c=>{ c.classList.remove('selected'); c.setAttribute('aria-checked','false'); });
+    selCount.textContent = '0';
+    revealBtn.disabled = true;
+    resultZone.innerHTML = '';
+  });
+
+  revealBtn.addEventListener('click', ()=>{
+    const scores = {};
+    const chosen = CAREER_SUBJECTS.filter(s=>selected.has(s.code));
+    chosen.forEach(s=>{
+      Object.entries(s.tags).forEach(([k,v])=>{ scores[k] = (scores[k]||0) + v; });
+    });
+    const ranked = Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+    if(ranked.length === 0){ resultZone.innerHTML = ''; return; }
+
+    const [topKey, topScore] = ranked[0];
+    const top = SPECIALISATIONS[topKey];
+    const second = ranked[1] ? SPECIALISATIONS[ranked[1][0]] : null;
+
+    let html = `<div class="card result-card">
+      <div class="badge">Based on ${chosen.length} subject${chosen.length>1?'s':''}</div>
+      <h3>${top.title}</h3>
+      <p class="lede">${top.blurb}</p>
+      <h3 style="font-size:1rem; font-family:'Inter',sans-serif; text-transform:uppercase; letter-spacing:.06em; color:#6B6350;">Roles this points toward</h3>
+      <ul class="role-list">${top.roles.map(r=>`<li>${r}</li>`).join('')}</ul>
+      <h3 style="font-size:1rem; font-family:'Inter',sans-serif; text-transform:uppercase; letter-spacing:.06em; color:#6B6350;">Papers to prioritise later in the programme</h3>
+      <ul class="next-list">${top.next.map(n=>`<li>${n}</li>`).join('')}</ul>`;
+
+    if(second){
+      html += `<div class="secondary-note">Your picks also lean toward <strong>${second.title}</strong> —
+        worth exploring as a minor interest or elective focus: ${second.roles.slice(0,2).join(', ')}.</div>`;
+    }
+    html += `</div>`;
+    resultZone.innerHTML = html;
+    resultZone.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  });
+
+  buildGrid();
+</script>
+</body>
+</html>

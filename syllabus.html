@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Syllabus — B.A. Hons Psychology</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav-row">
+    <div class="brand">
+      <span class="kicker">Invertis University · Dept. of Applied Sciences &amp; Humanities</span>
+      <span class="name">B.A. Hons Psychology</span>
+    </div>
+    <nav class="tabs">
+      <a class="tab" href="index.html">Overview</a>
+      <a class="tab active" href="syllabus.html">Syllabus</a>
+      <a class="tab" href="readings.html">Readings</a>
+      <a class="tab" href="career.html">Career Compass</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="tight">
+    <div class="wrap">
+      <span class="kicker-eyebrow">Year-wise syllabus</span>
+      <h2>Pick a year, read the case file.</h2>
+      <p class="section-note">Each row is one paper: lecture / practical / project hours per week,
+      the continuous-assessment vs. end-semester split, and its credit weight (the stamped circle).
+      <span style="color:var(--sage)">■ green</span> rows are labs, <span style="color:var(--coral)">■ orange</span> rows are projects/internships.</p>
+
+      <div class="year-tabs" id="yearTabs"></div>
+      <div id="yearContent"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    L = Lecture hrs/wk · P = Practical hrs/wk · PR/PW = Project work · CA = Continuous Assessment · EE = End-Semester Exam.
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script>
+  const yearTabs = document.getElementById('yearTabs');
+  const yearContent = document.getElementById('yearContent');
+  const years = Object.keys(SYLLABUS);
+
+  function renderYear(y){
+    yearTabs.querySelectorAll('.year-tab').forEach(b=>b.classList.toggle('active', b.dataset.y===y));
+    const yearData = SYLLABUS[y];
+    let html = `<p style="color:#C9C2AA;margin-bottom:26px;">${yearData.label} · ${yearData.totalCredits} credits total</p>`;
+    Object.entries(yearData.semesters).forEach(([semName, sem])=>{
+      html += `<div class="sem-block">
+        <div class="sem-head">
+          <span class="sem-name">Semester ${semName}</span>
+          <span class="sem-credits">${sem.totalCredits} credits</span>
+        </div>
+        <div class="course-list">`;
+      sem.courses.forEach(c=>{
+        const periods = `${c.L}L · ${c.P}P${c.PR ? ' · '+c.PR+'PR/PW' : ''}`;
+        html += `<div class="course-row ${c.type!=='theory'?c.type:''}">
+          <span class="code mono">${c.code}</span>
+          <span class="cname">${c.name}</span>
+          <span class="type-badge">${c.type}</span>
+          <span class="periods">${periods}</span>
+          <span class="credit-stamp">${c.credit}</span>
+        </div>`;
+      });
+      html += `</div></div>`;
+    });
+    yearContent.innerHTML = html;
+  }
+
+  years.forEach((y,i)=>{
+    const btn = document.createElement('button');
+    btn.className = 'year-tab' + (i===0 ? ' active' : '');
+    btn.dataset.y = y;
+    btn.textContent = SYLLABUS[y].label;
+    btn.addEventListener('click', ()=>renderYear(y));
+    yearTabs.appendChild(btn);
+  });
+
+  renderYear(years[0]);
+</script>
+</body>
+</html>

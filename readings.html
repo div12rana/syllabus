@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Suggested Readings — B.A. Hons Psychology</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="nav-row">
+    <div class="brand">
+      <span class="kicker">Invertis University · Dept. of Applied Sciences &amp; Humanities</span>
+      <span class="name">B.A. Hons Psychology</span>
+    </div>
+    <nav class="tabs">
+      <a class="tab" href="index.html">Overview</a>
+      <a class="tab" href="syllabus.html">Syllabus</a>
+      <a class="tab active" href="readings.html">Readings</a>
+      <a class="tab" href="career.html">Career Compass</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="tight">
+    <div class="wrap">
+      <span class="kicker-eyebrow">Subject-wise reading list</span>
+      <h2>Pick a subject, pull its catalogue card.</h2>
+      <p class="section-note">Select any paper from the shelf on the left. Detailed reading lists are
+      published in the syllabus for Year 1 papers; subjects marked without a <span style="color:var(--sage)">● books</span>
+      tag will show a note instead of guessed titles — check with your department for their current list.</p>
+
+      <div class="readings-layout">
+        <nav class="subject-index" id="subjectIndex" aria-label="Subject list"></nav>
+        <div class="card book-card" id="bookCard"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">Reading lists reproduced from the official syllabus document, Year 1 (Semesters I–II).</div>
+</footer>
+
+<script src="js/data.js"></script>
+<script>
+  const subjectIndex = document.getElementById('subjectIndex');
+  const bookCard = document.getElementById('bookCard');
+
+  // Flatten all courses (theory + labs + projects) across all years, in order.
+  const allCourses = [];
+  Object.entries(SYLLABUS).forEach(([yearNum, yearData])=>{
+    Object.entries(yearData.semesters).forEach(([semName, sem])=>{
+      sem.courses.forEach(c=>{
+        allCourses.push({ ...c, year: yearNum, sem: semName });
+      });
+    });
+  });
+
+  function buildIndex(){
+    let html = '';
+    let lastYear = null;
+    allCourses.forEach(c=>{
+      if(c.year !== lastYear){
+        html += `<div class="yr-label">Year ${c.year}</div>`;
+        lastYear = c.year;
+      }
+      const hasBooks = !!BOOKS[c.code];
+      html += `<button class="subject-btn" data-code="${c.code}">
+        ${c.name}
+        <span class="has-books">${hasBooks ? '● '+BOOKS[c.code].length+' books · Sem '+c.sem : '○ list not published · Sem '+c.sem}</span>
+      </button>`;
+    });
+    subjectIndex.innerHTML = html;
+    subjectIndex.querySelectorAll('.subject-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>selectSubject(btn.dataset.code));
+    });
+  }
+
+  function selectSubject(code){
+    subjectIndex.querySelectorAll('.subject-btn').forEach(b=>b.classList.toggle('active', b.dataset.code===code));
+    const course = allCourses.find(c=>c.code===code);
+    const books = BOOKS[code];
+    let html = `<h3>${course.name}</h3>
+      <div class="meta">${code} · Year ${course.year}, Semester ${course.sem} · ${course.credit} credits</div>`;
+    if(books){
+      html += `<ul class="book-list">${books.map(b=>`<li>${b}</li>`).join('')}</ul>`;
+    } else {
+      html += `<div class="empty-note">This paper's reading list hasn't been published in the syllabus
+        document yet (readings are currently detailed for Year 1 papers only). Ask your course
+        instructor for the current recommended texts.</div>`;
+    }
+    bookCard.innerHTML = html;
+    bookCard.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
+  buildIndex();
+  selectSubject('BPSY101');
+</script>
+</body>
+</html>
